@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-iron-black: #1C1A18;
+  --color-wrought-copper: #B87333;
+  --color-wrought-amber: #A9782F;
+  --color-wrought-cream: #F5EFE6;
+  --color-charcoal: #2E2A26;
+  --color-patina-green: #6E8871;
+
+  --font-serif: var(--font-serif), serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
+:root {
+  --background: #F5EFE6;
+  --foreground: #2E2A26;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--color-iron-black);
+}
+
+/* Custom design scrollwork / patterns or scrollbar behaviors */
+.scrollwork-border {
+  background-image: radial-gradient(circle at 100% 150%, transparent 24%, var(--color-iron-black) 24%, var(--color-iron-black) 28%, transparent 28%, transparent);
+  background-size: 20px 20px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Utility to hide scrollbars but maintain scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
