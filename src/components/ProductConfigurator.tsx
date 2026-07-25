@@ -107,12 +107,12 @@ export default function ProductConfigurator({ onPlateChange }: ProductConfigurat
   const getPlateDescription = (id: string) => {
     switch (id) {
       case 'grille':
-        return 'Classic ridged iron plates for beautiful sear marks.';
+        return 'Classic ridged cast iron plates for seared lines. Hand-wash / seasoning-care only.';
       case 'lattice':
-        return 'Waffle iron pattern plates. Perfect for traditional Liège waffles (+ $25).';
+        return 'Waffle pattern cast iron plates. For Belgian waffles (+ $25). Hand-wash / seasoning-care only.';
       case 'anvil':
       default:
-        return 'Smooth flat surface. Ideal for standard griddled sandwiches.';
+        return 'Smooth flat cast iron plates. Ideal for standard griddling. Hand-wash / seasoning-care only.';
     }
   };
 

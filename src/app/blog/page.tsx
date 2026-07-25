@@ -53,46 +53,55 @@ export default function BlogIndexPage() {
         </p>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {LOCAL_RECIPES.map((recipe) => (
           <div 
             key={recipe.id}
-            className="bg-[#eae1d4]/30 border-2 border-iron-black rounded-lg p-6 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
+            className="bg-[#eae1d4]/30 border-2 border-iron-black rounded-lg flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-iron-black opacity-60" />
-            
-            <div>
-              <div className="flex justify-between items-start gap-4 mb-3">
-                <span className="font-mono text-[9px] text-iron-black/40 flex items-center gap-1.5">
-                  <Calendar size={10} /> {recipe.published_at}
-                </span>
-                <span className="bg-iron-black text-wrought-cream text-[9px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold">
+            {recipe.image && (
+              <div className="w-full h-44 border-b-2 border-iron-black overflow-hidden relative">
+                <img 
+                  src={recipe.image} 
+                  alt={recipe.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-3 right-3 bg-iron-black text-wrought-cream text-[9px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold">
                   {recipe.top_zone_temp}° / {recipe.bottom_zone_temp}°
                 </span>
               </div>
+            )}
+            
+            <div className="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start gap-4 mb-3">
+                  <span className="font-mono text-[9px] text-iron-black/40 flex items-center gap-1.5">
+                    <Calendar size={10} /> {recipe.published_at}
+                  </span>
+                </div>
 
-              <h2 className="font-serif text-lg font-bold text-iron-black mb-3 hover:text-wrought-copper transition-colors">
-                <Link href={`/blog/${recipe.slug}`}>
-                  {recipe.title}
-                </Link>
-              </h2>
-              
-              <p className="text-xs text-charcoal/80 leading-relaxed mb-4 line-clamp-3">
-                {recipe.body}
-              </p>
-            </div>
-
-            <div className="border-t border-iron-black/10 pt-4 flex flex-col gap-3">
-              <div className="text-[10px] font-mono text-charcoal/50">
-                Recommended Plate: <span className="font-bold text-iron-black">{recipe.plate}</span>
+                <h2 className="font-serif text-lg font-bold text-iron-black mb-3 hover:text-wrought-copper transition-colors">
+                  <Link href={`/blog/${recipe.slug}`}>
+                    {recipe.title}
+                  </Link>
+                </h2>
+                
+                <p className="text-xs text-charcoal/80 leading-relaxed mb-4 line-clamp-3">
+                  {recipe.body}
+                </p>
               </div>
-              <Link
-                href={`/blog/${recipe.slug}`}
-                className="font-mono text-xs uppercase tracking-widest text-iron-black hover:text-wrought-copper font-bold flex items-center gap-1.5"
-              >
-                View Full Recipe <ArrowRight size={12} />
-              </Link>
+
+              <div className="border-t border-iron-black/10 pt-4 flex flex-col gap-3">
+                <div className="text-[10px] font-mono text-charcoal/50">
+                  Recommended Plate: <span className="font-bold text-iron-black">{recipe.plate}</span>
+                </div>
+                <Link
+                  href={`/blog/${recipe.slug}`}
+                  className="font-mono text-xs uppercase tracking-widest text-iron-black hover:text-wrought-copper font-bold flex items-center gap-1.5"
+                >
+                  View Full Recipe <ArrowRight size={12} />
+                </Link>
+              </div>
             </div>
           </div>
         ))}

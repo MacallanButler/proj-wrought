@@ -47,7 +47,7 @@ export default function FAQPage() {
   const faqs = [
     {
       question: "Is the Wrought panini press dishwasher safe?",
-      answer: "The swappable cast iron cooking plates (The Grille, The Lattice, The Anvil) are hand-cast iron and should NOT be washed in the dishwasher. Wash them in warm water with a stiff brush and dry immediately, just like a cast-iron skillet. The slide-out copper drip tray and accessories tool are dishwasher-safe."
+      answer: "The swappable cast iron cooking plates (The Grille, The Lattice, The Anvil) are seasoning-care and hand-wash only. They should NEVER be washed in the dishwasher because harsh dishwasher detergents, high heat, and standing moisture will strip the protective polymerized oil seasoning layer from the iron, causing the plates to rust and lose their natural non-stick properties. Instead, scrub them under hot water with a stiff brush (no soap needed) and dry them immediately. The slide-out copper drip tray and nylon/silicone combo scraper tool are fully dishwasher-safe."
     },
     {
       question: "What is covered under the Lifetime Casting Warranty?",

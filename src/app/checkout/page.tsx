@@ -115,6 +115,8 @@ export default function CheckoutPage() {
         shipping: shippingCost,
         tax: taxCost,
         total: cartTotal + shippingCost + taxCost,
+        date: new Date().toLocaleDateString(),
+        timestamp: Date.now(),
         items: cartItems.map(item => ({
           name: item.name,
           plate: item.plateOption.name,

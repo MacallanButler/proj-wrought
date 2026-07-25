@@ -1,8 +1,8 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Play, Thermometer, Calendar, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Thermometer, Calendar, ShieldCheck, HelpCircle, Star } from 'lucide-react';
 
 const LOCAL_RECIPES = [
   {
@@ -15,6 +15,7 @@ const LOCAL_RECIPES = [
     plate: 'The Anvil or The Grille',
     published_at: '2026-07-15',
     cook_time: '5 minutes',
+    image: '/images/recipe-prosciutto.jpg',
     ingredients: [
       '2 slices of stone-baked sourdough bread',
       '4 thin slices of prosciutto di Parma',
@@ -41,6 +42,7 @@ const LOCAL_RECIPES = [
     plate: 'The Lattice',
     published_at: '2026-07-10',
     cook_time: '4 minutes',
+    image: '/images/recipe-waffles.jpg',
     ingredients: [
       '2 cups all-purpose flour',
       '1.5 tsp active dry yeast',
@@ -69,6 +71,7 @@ const LOCAL_RECIPES = [
     plate: 'The Grille or The Anvil',
     published_at: '2026-07-05',
     cook_time: '6 minutes',
+    image: '/images/recipe-croque.jpg',
     ingredients: [
       '2 slices of thick-cut brioche bread',
       '3 slices of premium black forest ham',
@@ -95,6 +98,32 @@ interface PageProps {
 export default function RecipeDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const recipe = LOCAL_RECIPES.find((r) => r.slug === resolvedParams.slug);
+
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    if (recipe && typeof window !== 'undefined') {
+      const favs = localStorage.getItem('wrought_favorites');
+      if (favs) {
+        const parsed = JSON.parse(favs) as string[];
+        setIsFavorite(parsed.includes(recipe.id));
+      }
+    }
+  }, [recipe]);
+
+  const toggleFavorite = () => {
+    if (!recipe) return;
+    const favs = localStorage.getItem('wrought_favorites');
+    let parsed: string[] = favs ? JSON.parse(favs) : [];
+    if (parsed.includes(recipe.id)) {
+      parsed = parsed.filter(id => id !== recipe.id);
+      setIsFavorite(false);
+    } else {
+      parsed.push(recipe.id);
+      setIsFavorite(true);
+    }
+    localStorage.setItem('wrought_favorites', JSON.stringify(parsed));
+  };
 
   if (!recipe) {
     return (
@@ -152,7 +181,17 @@ export default function RecipeDetailPage({ params }: PageProps) {
         
         {/* Left Side: Recipe details */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          
+          {/* Recipe Image Banner */}
+          {recipe.image && (
+            <div className="w-full aspect-[16/10] border-2 border-iron-black rounded-lg overflow-hidden relative bg-[#eae1d4]">
+              <img 
+                src={recipe.image} 
+                alt={recipe.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
           {/* Header */}
           <div className="border-b border-iron-black/15 pb-6">
             <div className="flex gap-4 items-center text-mono text-[9px] text-iron-black/55 uppercase mb-2">
@@ -160,7 +199,20 @@ export default function RecipeDetailPage({ params }: PageProps) {
               <span>•</span>
               <span>Cook time: {recipe.cook_time}</span>
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-iron-black">{recipe.title}</h1>
+            
+            <div className="flex justify-between items-start gap-4">
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-iron-black">{recipe.title}</h1>
+              <button
+                onClick={toggleFavorite}
+                className="p-2 border border-iron-black/15 hover:border-iron-black rounded-full text-iron-black transition-colors focus:outline-none cursor-pointer flex-shrink-0"
+                aria-label={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+              >
+                <Star 
+                  size={18} 
+                  className={`transition-colors duration-200 ${isFavorite ? 'fill-wrought-copper text-wrought-copper' : 'text-iron-black/40'}`} 
+                />
+              </button>
+            </div>
           </div>
 
           <p className="text-charcoal/85 text-xs sm:text-sm leading-relaxed italic border-l-2 border-wrought-copper pl-4">
@@ -193,8 +245,8 @@ export default function RecipeDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Right Side: Preset Launcher */}
-        <div className="lg:col-span-4 bg-[#eae1d4] border-2 border-iron-black rounded-lg p-6 relative">
+        {/* Right Side: Structured Info Card */}
+        <div className="lg:col-span-4 bg-[#eae1d4] border-2 border-iron-black rounded-lg p-6 relative shadow-sm">
           <div className="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-iron-black/20" />
           <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-iron-black/20" />
 
@@ -202,7 +254,7 @@ export default function RecipeDetailPage({ params }: PageProps) {
             Wrought Calibration
           </h3>
 
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2 p-3.5 bg-wrought-cream rounded border border-iron-black/10 text-xs">
               <div className="flex justify-between items-center font-mono">
                 <span className="text-charcoal/60 uppercase text-[9px] tracking-wider flex items-center gap-1">
@@ -221,17 +273,13 @@ export default function RecipeDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <p className="text-[10px] text-charcoal/65 leading-relaxed">
-              Click below to load these target temperatures directly into the home landing page heat demonstration widget.
-            </p>
+            <div className="p-3 bg-wrought-cream border border-iron-black/10 rounded flex items-start gap-2.5">
+              <ShieldCheck className="text-patina-green w-4 h-4 flex-shrink-0 mt-0.5" />
+              <div className="text-[10px] text-charcoal/80 leading-relaxed font-sans">
+                Install recommended plate style before preheating. Insert the temperature probe into the sandwich core to automatically trigger acoustic rest mode when target melt temperatures are reached.
+              </div>
+            </div>
           </div>
-
-          <Link
-            href={`/?top=${recipe.top_zone_temp}&bottom=${recipe.bottom_zone_temp}#heat-demo`}
-            className="w-full py-3 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase tracking-widest text-[10px] font-bold rounded shadow transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Play size={10} fill="currentColor" /> Load Into Demo
-          </Link>
         </div>
 
       </div>

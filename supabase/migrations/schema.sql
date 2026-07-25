@@ -174,3 +174,18 @@ insert into public.shipping_rates (zone, rate) values
 ('Pacific US', 22.00),
 ('Alaska & Hawaii', 35.00)
 on conflict (zone) do update set rate = excluded.rate;
+
+-- 8. USER FAVORITES TABLE
+create table public.user_favorites (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references auth.users(id) on delete cascade not null,
+    recipe_id uuid references public.recipes(id) on delete cascade not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    unique(user_id, recipe_id)
+);
+
+-- RLS for user_favorites
+alter table public.user_favorites enable row level security;
+create policy "Allow authenticated users to manage their own favorites" on public.user_favorites
+    for all using (auth.uid() = user_id);
+
