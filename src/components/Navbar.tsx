@@ -50,7 +50,7 @@ export default function Navbar() {
           <Link href="/cart" className="relative p-1.5 text-iron-black hover:text-wrought-copper transition-colors" aria-label="Shopping Cart">
             <ShoppingBag size={20} className="stroke-[1.75]" />
             {cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-wrought-copper text-wrought-cream text-[9px] font-mono font-bold flex items-center justify-center px-1 border border-[#f5efe6] animate-pulse">
+              <span className="absolute -top-1 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-wrought-copper text-wrought-cream text-[9px] font-mono font-bold tabular-nums flex items-center justify-center px-1 border border-[#f5efe6] animate-pulse">
                 {cartItemCount}
               </span>
             )}

@@ -15,18 +15,21 @@ export interface AddonOption {
 }
 
 export interface CartItem {
-  id: string; // Unique combination key: e.g., "grille-butter_roller_steam_vent"
+  id: string; // Unique combination key: e.g., "grille-butter_roller_steam_vent" or "part-heating_core"
   productId: string;
   name: string;
   basePrice: number;
-  plateOption: PlateOption;
-  addons: AddonOption[];
+  plateOption?: PlateOption; // Optional for parts
+  addons?: AddonOption[];     // Optional for parts
   quantity: number;
+  isPart?: boolean;
+  partId?: string;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (plateOption: PlateOption, addons: AddonOption[], quantity: number) => void;
+  addPartToCart: (partId: string, partName: string, price: number, quantity: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -91,6 +94,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const addPartToCart = (partId: string, partName: string, price: number, quantity: number) => {
+    setCartItems((prevItems) => {
+      const configId = `part-${partId}`;
+      const existingIndex = prevItems.findIndex((item) => item.id === configId);
+
+      if (existingIndex > -1) {
+        const updatedItems = [...prevItems];
+        updatedItems[existingIndex].quantity += quantity;
+        return updatedItems;
+      }
+
+      const newItem: CartItem = {
+        id: configId,
+        productId: partId,
+        name: partName,
+        basePrice: price,
+        quantity,
+        isPart: true,
+        partId,
+      };
+
+      return [...prevItems, newItem];
+    });
+  };
+
   const removeFromCart = (id: string) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
@@ -110,8 +138,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const cartTotal = cartItems.reduce((acc, item) => {
-    const plateCost = item.plateOption.priceDelta;
-    const addonsCost = item.addons.reduce((sum, a) => sum + a.priceDelta, 0);
+    if (item.isPart) {
+      return acc + item.basePrice * item.quantity;
+    }
+    const plateCost = item.plateOption?.priceDelta || 0;
+    const addonsCost = item.addons?.reduce((sum, a) => sum + a.priceDelta, 0) || 0;
     const itemUnitPrice = item.basePrice + plateCost + addonsCost;
     return acc + itemUnitPrice * item.quantity;
   }, 0);
@@ -123,6 +154,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cartItems,
         addToCart,
+        addPartToCart,
         removeFromCart,
         updateQuantity,
         clearCart,

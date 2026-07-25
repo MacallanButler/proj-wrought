@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ArrowLeft, CreditCard, ShieldCheck, Check, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe('pk_test_51MockKeyWroughtPress123456');
 
 // US State to Shipping Zone Mapping
 const stateToZoneMap: { [key: string]: { name: string; rate: number } } = {
@@ -46,9 +50,11 @@ const stateTaxMap: { [key: string]: number } = {
   OR: 0.00, // No sales tax in Oregon (where Wrought is forged!)
 };
 
-export default function CheckoutPage() {
+function CheckoutForm() {
   const router = useRouter();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const stripe = useStripe();
+  const elements = useElements();
 
   // Form State
   const [email, setEmail] = useState('');
@@ -58,9 +64,6 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('');
   const [usState, setUsState] = useState('');
   const [zip, setZip] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
   
   // Calculations
   const [shippingCost, setShippingCost] = useState(15.00);
@@ -94,11 +97,20 @@ export default function CheckoutPage() {
     }
   }, [usState, cartTotal]);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
 
     setIsProcessing(true);
+
+    // If Stripe is loaded, we can fetch the CardElement for a token creation
+    if (stripe && elements) {
+      const cardElement = elements.getElement(CardElement);
+      if (cardElement) {
+        // Run a simulated payment confirmation/tokenization call that succeeds locally
+        await stripe.createToken(cardElement).catch(() => {});
+      }
+    }
 
     // Simulate Payment Processing
     setTimeout(() => {
@@ -119,10 +131,10 @@ export default function CheckoutPage() {
         timestamp: Date.now(),
         items: cartItems.map(item => ({
           name: item.name,
-          plate: item.plateOption.name,
-          addons: item.addons.map(a => a.name),
+          plate: item.plateOption?.name || 'N/A',
+          addons: item.addons?.map(a => a.name) || [],
           qty: item.quantity,
-          price: item.basePrice + item.plateOption.priceDelta + item.addons.reduce((sum, a) => sum + a.priceDelta, 0)
+          price: item.basePrice + (item.plateOption?.priceDelta || 0) + (item.addons?.reduce((sum, a) => sum + a.priceDelta, 0) || 0)
         }))
       };
 
@@ -140,9 +152,6 @@ export default function CheckoutPage() {
     setCity('Portland');
     setUsState('OR');
     setZip('97201');
-    setCardNumber('4242 •••• •••• 4242');
-    setCardExpiry('12/28');
-    setCardCvc('420');
   };
 
   const orderTotal = cartTotal + shippingCost + taxCost;
@@ -258,15 +267,23 @@ export default function CheckoutPage() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="font-mono text-[9px] uppercase text-iron-black/60">State (US) *</label>
-                <input
-                  type="text"
+                <select
                   required
-                  maxLength={2}
                   value={usState}
-                  onChange={(e) => setUsState(e.target.value.toUpperCase().trim())}
-                  className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs focus:border-wrought-copper outline-none text-center font-mono placeholder:text-iron-black/35"
-                  placeholder="OR"
-                />
+                  onChange={(e) => setUsState(e.target.value)}
+                  className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs focus:border-wrought-copper outline-none font-mono text-center cursor-pointer"
+                >
+                  <option value="" disabled>Select</option>
+                  <option value="OR">OR</option>
+                  <option value="CA">CA</option>
+                  <option value="WA">WA</option>
+                  <option value="TX">TX</option>
+                  <option value="NY">NY</option>
+                  <option value="NJ">NJ</option>
+                  <option value="PA">PA</option>
+                  <option value="IL">IL</option>
+                  <option value="FL">FL</option>
+                </select>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="font-mono text-[9px] uppercase text-iron-black/60">Zip Code *</label>
@@ -287,48 +304,30 @@ export default function CheckoutPage() {
               <span className="w-4 h-4 rounded-full bg-iron-black text-wrought-cream text-[9px] flex items-center justify-center">2</span> Stripe Secure Sandbox
             </h3>
 
-            <div className="flex flex-col gap-4 p-4 border border-iron-black/15 bg-wrought-cream/65 rounded">
-              <div className="flex items-center gap-2 border-b border-iron-black/10 pb-2 mb-2">
+            <div className="p-4 border border-iron-black/15 bg-wrought-cream/65 rounded">
+              <div className="flex items-center gap-2 border-b border-iron-black/10 pb-3.5 mb-3.5">
                 <CreditCard size={16} className="text-wrought-copper" />
-                <span className="font-mono text-[10px] text-iron-black/65 uppercase tracking-wide">Credit Card Details (Simulated)</span>
+                <span className="font-mono text-[10px] text-iron-black/65 uppercase tracking-wide">Credit Card Details (Stripe Elements)</span>
               </div>
               
-              <div className="flex flex-col gap-1">
-                <label className="font-mono text-[8px] uppercase text-iron-black/50">Card Number</label>
-                <input
-                  type="text"
-                  required
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  className="bg-wrought-cream border border-iron-black/15 rounded p-2 text-xs font-mono outline-none focus:border-wrought-copper"
-                  placeholder="4242 4242 4242 4242"
+              <div className="bg-wrought-cream border border-iron-black/15 rounded p-3 text-xs outline-none focus-within:border-wrought-copper">
+                <CardElement 
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '13px',
+                        color: '#1C1A18',
+                        fontFamily: 'var(--font-mono), monospace',
+                        '::placeholder': {
+                          color: '#8A847C',
+                        },
+                      },
+                      invalid: {
+                        color: '#B23A22',
+                      },
+                    },
+                  }}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-[8px] uppercase text-iron-black/50">Expiration</label>
-                  <input
-                    type="text"
-                    required
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
-                    className="bg-wrought-cream border border-iron-black/15 rounded p-2 text-xs font-mono outline-none text-center focus:border-wrought-copper"
-                    placeholder="MM / YY"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-[8px] uppercase text-iron-black/50">CVC</label>
-                  <input
-                    type="password"
-                    required
-                    maxLength={4}
-                    value={cardCvc}
-                    onChange={(e) => setCardCvc(e.target.value)}
-                    className="bg-wrought-cream border border-iron-black/15 rounded p-2 text-xs font-mono outline-none text-center focus:border-wrought-copper"
-                    placeholder="•••"
-                  />
-                </div>
               </div>
             </div>
 
@@ -372,8 +371,8 @@ export default function CheckoutPage() {
             {cartItems.map((item) => {
               const itemUnitPrice = 
                 item.basePrice + 
-                item.plateOption.priceDelta + 
-                item.addons.reduce((sum, a) => sum + a.priceDelta, 0);
+                (item.plateOption?.priceDelta || 0) + 
+                (item.addons?.reduce((sum, a) => sum + a.priceDelta, 0) || 0);
               const lineTotal = itemUnitPrice * item.quantity;
               
               return (
@@ -381,7 +380,7 @@ export default function CheckoutPage() {
                   <div>
                     <span className="font-serif font-bold text-iron-black block">{item.name}</span>
                     <span className="font-mono text-[9px] text-charcoal/60">
-                      Plate: {item.plateOption.name} {item.addons.length > 0 && `+ ${item.addons.length} Add-ons`}
+                      {item.isPart ? 'Replacement Core' : `Plate: ${item.plateOption?.name || 'N/A'} ${(item.addons && item.addons.length > 0) ? `+ ${item.addons.length} Add-ons` : ''}`}
                     </span>
                     <span className="text-[10px] text-charcoal/50 block mt-0.5">Qty: {item.quantity}</span>
                   </div>
@@ -422,5 +421,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
   );
 }

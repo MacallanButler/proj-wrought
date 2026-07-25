@@ -60,6 +60,7 @@ export default function AccountDashboardPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'favorites'>('profile');
   const [daysToMaintenance, setDaysToMaintenance] = useState(60);
   const [maintenanceDateStr, setMaintenanceDateStr] = useState('');
+  const [seasoningLogs, setSeasoningLogs] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -85,7 +86,17 @@ export default function AccountDashboardPage() {
         }
       }
 
-      // 3. Compute maintenance countdown (90 days interval)
+      // 3. Fetch seasoning logs
+      const logs = localStorage.getItem('wrought_seasoning_logs');
+      if (logs) {
+        setSeasoningLogs(JSON.parse(logs));
+      } else {
+        const defaultLogs = ['Factory Cure: Pre-Seasoned with Organic Grape Seed Oil'];
+        setSeasoningLogs(defaultLogs);
+        localStorage.setItem('wrought_seasoning_logs', JSON.stringify(defaultLogs));
+      }
+
+      // 4. Compute maintenance countdown (90 days interval)
       const orderTime = currentOrder?.timestamp || (Date.now() - 30 * 24 * 60 * 60 * 1000); // fallback to 30 days ago
       const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
       const maintenanceTime = orderTime + ninetyDaysMs;
@@ -103,6 +114,14 @@ export default function AccountDashboardPage() {
   // Determine current active config
   const activePlate = order?.items[0]?.plate || 'The Grille';
   const activeAddons = order?.items[0]?.addons || [];
+
+  const handleRemoveFavorite = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const updated = favorites.filter(fav => fav !== id);
+    setFavorites(updated);
+    localStorage.setItem('wrought_favorites', JSON.stringify(updated));
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto pt-6 pb-12 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
@@ -154,41 +173,104 @@ export default function AccountDashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col gap-8"
             >
-              {/* Configuration Profile */}
-              <div className="bg-[#eae1d4]/40 border-2 border-iron-black rounded-lg p-6 shadow-sm">
-                <h3 className="font-serif text-lg font-bold text-iron-black mb-4 border-b border-iron-black/10 pb-2 flex items-center gap-2">
-                  <Settings size={18} className="text-wrought-copper" /> Active Press Configuration
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-1 text-xs">
-                    <span className="font-mono text-[9px] uppercase text-charcoal/50">Base Press Chassis</span>
-                    <span className="font-serif font-bold text-sm text-iron-black">Wrought Panini Press (Modular 1800W)</span>
-                    <span className="font-mono text-[10px] text-patina-green mt-1 flex items-center gap-1">
-                      <ShieldCheck size={12} /> Standard Parallel-Hinge Frame
-                    </span>
-                  </div>
+              {order ? (
+                /* Configuration Profile */
+                <div className="bg-[#eae1d4]/40 border-2 border-iron-black rounded-lg p-6 shadow-sm">
+                  <h3 className="font-serif text-lg font-bold text-iron-black mb-4 border-b border-iron-black/10 pb-2 flex items-center gap-2">
+                    <Settings size={18} className="text-wrought-copper" /> Active Press Configuration
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-1 text-xs">
+                      <span className="font-mono text-[9px] uppercase text-charcoal/50">Base Press Chassis</span>
+                      <span className="font-serif font-bold text-sm text-iron-black">Wrought Panini Press (Modular 1800W)</span>
+                      <span className="font-mono text-[10px] text-patina-green mt-1 flex items-center gap-1">
+                        <ShieldCheck size={12} /> Standard Parallel-Hinge Frame
+                      </span>
+                    </div>
 
-                  <div className="flex flex-col gap-1 text-xs">
-                    <span className="font-mono text-[9px] uppercase text-charcoal/50">Casting Plate Configuration</span>
-                    <span className="font-serif font-bold text-sm text-iron-black">{activePlate} Installed</span>
-                    <span className="text-[10px] text-charcoal/65 mt-1">Hand-wash / seasoning-care only.</span>
-                  </div>
-                </div>
-
-                {activeAddons.length > 0 && (
-                  <div className="mt-6 border-t border-iron-black/10 pt-4">
-                    <span className="font-mono text-[9px] uppercase text-charcoal/50 block mb-2">Equipped Attachments</span>
-                    <div className="flex flex-wrap gap-2">
-                      {activeAddons.map((addon, idx) => (
-                        <span key={idx} className="bg-iron-black text-wrought-cream text-[9px] font-mono py-1 px-2.5 rounded border border-iron-black font-bold uppercase tracking-wider">
-                          {addon}
-                        </span>
-                      ))}
+                    <div className="flex flex-col gap-1 text-xs">
+                      <span className="font-mono text-[9px] uppercase text-charcoal/50">Casting Plate Configuration</span>
+                      <span className="font-serif font-bold text-sm text-iron-black">{activePlate} Installed</span>
+                      <span className="text-[10px] text-charcoal/65 mt-1">Hand-wash / seasoning-care only.</span>
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {activeAddons.length > 0 && (
+                    <div className="mt-6 border-t border-iron-black/10 pt-4">
+                      <span className="font-mono text-[9px] uppercase text-charcoal/50 block mb-2">Equipped Attachments</span>
+                      <div className="flex flex-wrap gap-2">
+                        {activeAddons.map((addon, idx) => (
+                          <span key={idx} className="bg-iron-black text-wrought-cream text-[9px] font-mono py-1 px-2.5 rounded border border-iron-black font-bold uppercase tracking-wider">
+                            {addon}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Guest Empty State & Registration Form */
+                <div className="bg-[#eae1d4]/40 border-2 border-iron-black rounded-lg p-6 md:p-8 shadow-sm">
+                  <h3 className="font-serif text-xl font-bold text-iron-black mb-2 flex items-center gap-2">
+                    <ShieldCheck size={20} className="text-wrought-copper" /> Register Your Wrought Press
+                  </h3>
+                  <p className="text-xs text-charcoal/70 leading-relaxed mb-6">
+                    You are currently visiting the dashboard as a guest. Enter your details and press serial number below to register your product warranty and unlock seasoning log tracking.
+                  </p>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const name = `${formData.get('firstName')} ${formData.get('lastName')}`;
+                    const email = formData.get('email') as string;
+                    const serial = formData.get('serial') as string;
+                    
+                    const simulatedOrder = {
+                      orderNumber: serial || `WR-${Math.floor(100000 + Math.random() * 900000)}`,
+                      email: email || 'customer@forge.com',
+                      name: name || 'Wrought Patriot',
+                      address: '123 Foundry Lane, Portland, OR 97201',
+                      subtotal: 349.00,
+                      shipping: 15.00,
+                      tax: 0.00,
+                      total: 364.00,
+                      date: new Date().toLocaleDateString(),
+                      timestamp: Date.now(),
+                      items: [{
+                        name: 'Wrought Panini Press (Modular)',
+                        plate: 'The Grille',
+                        addons: [],
+                        qty: 1,
+                        price: 349.00
+                      }]
+                    };
+                    localStorage.setItem('last_order', JSON.stringify(simulatedOrder));
+                    setOrder(simulatedOrder);
+                    alert('Registration Successful! Your Wrought Press Profile is now active.');
+                  }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="font-mono text-[9px] uppercase text-iron-black/60">First Name</label>
+                      <input type="text" name="firstName" required className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs focus:border-wrought-copper outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="font-mono text-[9px] uppercase text-iron-black/60">Last Name</label>
+                      <input type="text" name="lastName" required className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs focus:border-wrought-copper outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1 md:col-span-2">
+                      <label className="font-mono text-[9px] uppercase text-iron-black/60">Email Address</label>
+                      <input type="email" name="email" required className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs focus:border-wrought-copper outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1 md:col-span-2">
+                      <label className="font-mono text-[9px] uppercase text-iron-black/60">Press Serial Number / Registration Key</label>
+                      <input type="text" name="serial" required placeholder="e.g. WR-482015" className="bg-wrought-cream border border-iron-black/20 rounded p-2 text-xs font-mono focus:border-wrought-copper outline-none" />
+                    </div>
+                    <button type="submit" className="md:col-span-2 mt-4 py-2.5 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase text-xs tracking-widest font-bold rounded transition-colors cursor-pointer">
+                      Register My Wrought Press
+                    </button>
+                  </form>
+                </div>
+              )}
 
               {/* Cast Iron Care Guide */}
               <div className="bg-wrought-cream border-2 border-iron-black rounded-lg p-6 md:p-8 shadow-sm">
@@ -319,6 +401,14 @@ export default function AccountDashboardPage() {
                           alt={recipe.title} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveFavorite(e, recipe.id)}
+                          className="absolute top-2.5 right-2.5 p-1.5 bg-wrought-cream hover:bg-wrought-copper border border-iron-black text-wrought-copper hover:text-wrought-cream rounded-full transition-all z-10 cursor-pointer shadow active:scale-95"
+                          aria-label="Remove favorite"
+                        >
+                          <Star size={12} className="fill-current" />
+                        </button>
                       </div>
                     )}
                     
@@ -424,6 +514,13 @@ export default function AccountDashboardPage() {
                   setDaysToMaintenance(90);
                   const mDate = new Date(newTimestamp + 90 * 24 * 60 * 60 * 1000);
                   setMaintenanceDateStr(mDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+                  
+                  // Log seasoning history event
+                  const newLog = `Seasoned: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                  const updatedLogs = [newLog, ...seasoningLogs];
+                  setSeasoningLogs(updatedLogs);
+                  localStorage.setItem('wrought_seasoning_logs', JSON.stringify(updatedLogs));
+                  
                   alert('Casting maintenance log updated. Seasoning timer reset to 90 days!');
                 }
               }}
@@ -431,6 +528,23 @@ export default function AccountDashboardPage() {
             >
               <Droplet size={10} className="fill-currentColor" /> Log Seasoning Event
             </button>
+          </div>
+
+          {/* Seasoning History Logs */}
+          <div className="border-t border-iron-black/10 pt-4 mt-4 flex flex-col gap-2">
+            <span className="font-mono text-[8px] uppercase tracking-widest text-charcoal/50">Maintenance Logs</span>
+            {seasoningLogs.length > 0 ? (
+              <div className="flex flex-col gap-1.5 max-h-[120px] overflow-y-auto pr-1">
+                {seasoningLogs.map((log, idx) => (
+                  <div key={idx} className="font-mono text-[9px] text-charcoal/70 flex items-start gap-1">
+                    <span className="text-wrought-copper font-bold">•</span>
+                    <span>{log}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="font-mono text-[9px] text-charcoal/40 italic">No logs recorded.</span>
+            )}
           </div>
         </div>
 

@@ -7,9 +7,19 @@ import { Check, ShieldCheck, RefreshCw, PenTool } from 'lucide-react';
 
 interface ProductConfiguratorProps {
   onPlateChange: (id: string) => void;
+  selectedPlateId: string;
+  setSelectedPlateId: (id: string) => void;
+  selectedAddonIds: string[];
+  setSelectedAddonIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export default function ProductConfigurator({ onPlateChange }: ProductConfiguratorProps) {
+export default function ProductConfigurator({
+  onPlateChange,
+  selectedPlateId,
+  setSelectedPlateId,
+  selectedAddonIds,
+  setSelectedAddonIds,
+}: ProductConfiguratorProps) {
   const { addToCart } = useCart();
 
   // Seeded plates
@@ -27,8 +37,8 @@ export default function ProductConfigurator({ onPlateChange }: ProductConfigurat
   ];
 
   const basePrice = 349.00;
-  const [selectedPlate, setSelectedPlate] = useState<PlateOption>(plates[0]);
-  const [selectedAddons, setSelectedAddons] = useState<AddonOption[]>([]);
+  const selectedPlate = plates.find((p) => p.id === selectedPlateId) || plates[0];
+  const selectedAddons = addonsList.filter((a) => selectedAddonIds.includes(a.id));
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(basePrice);
   const [showAddedMessage, setShowAddedMessage] = useState(false);
@@ -47,12 +57,12 @@ export default function ProductConfigurator({ onPlateChange }: ProductConfigurat
   }, [selectedPlate, selectedAddons, quantity]);
 
   const handleAddonClick = (addon: AddonOption) => {
-    setSelectedAddons((prev) => {
-      const exists = prev.find((item) => item.id === addon.id);
+    setSelectedAddonIds((prev) => {
+      const exists = prev.includes(addon.id);
       if (exists) {
-        return prev.filter((item) => item.id !== addon.id);
+        return prev.filter((id) => id !== addon.id);
       }
-      return [...prev, addon];
+      return [...prev, addon.id];
     });
   };
 
@@ -136,7 +146,7 @@ export default function ProductConfigurator({ onPlateChange }: ProductConfigurat
               <button
                 key={plate.id}
                 type="button"
-                onClick={() => setSelectedPlate(plate)}
+                onClick={() => setSelectedPlateId(plate.id)}
                 className={`flex flex-col items-center p-4 border-2 rounded text-left transition-all ${
                   isSelected
                     ? 'border-wrought-copper bg-[#eae1d4] shadow-sm'
@@ -185,7 +195,7 @@ export default function ProductConfigurator({ onPlateChange }: ProductConfigurat
                     <div className="text-[10px] text-charcoal/65 mt-0.5">{addon.id === 'butter_roller' ? 'Attaches for automated butter distribution.' : addon.id === 'crimper_zone' ? 'Perfect for sealed hot pockets & hand pies.' : 'Adds steam functionality during grilling.'}</div>
                   </div>
                 </div>
-                <span className="font-mono text-xs font-bold text-wrought-copper ml-2">
+                <span className="font-mono text-xs font-bold text-wrought-copper ml-2 tabular-nums">
                   + ${addon.priceDelta.toFixed(2)}
                 </span>
               </button>

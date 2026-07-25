@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Thermometer, Calendar } from 'lucide-react';
 
 const LOCAL_RECIPES = [
@@ -61,12 +62,14 @@ export default function BlogIndexPage() {
           >
             {recipe.image && (
               <div className="w-full h-44 border-b-2 border-iron-black overflow-hidden relative">
-                <img 
+                <Image 
                   src={recipe.image} 
                   alt={recipe.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, 400px"
                 />
-                <span className="absolute top-3 right-3 bg-iron-black text-wrought-cream text-[9px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold">
+                <span className="absolute top-3 right-3 bg-iron-black text-wrought-cream text-[9px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold z-10">
                   {recipe.top_zone_temp}° / {recipe.bottom_zone_temp}°
                 </span>
               </div>

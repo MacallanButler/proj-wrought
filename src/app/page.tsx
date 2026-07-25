@@ -1,30 +1,75 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Product360Viewer from '@/components/Product360Viewer';
 import ProductConfigurator from '@/components/ProductConfigurator';
-import { ArrowRight, Thermometer, ShieldAlert, Cpu, Sparkles, Droplet, Hammer, Check, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react';
+import { ArrowRight, Thermometer, ShieldAlert, Cpu, Sparkles, Droplet, Hammer, Check, ChevronLeft, ChevronRight, Volume2, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 export default function Home() {
+  const { addToCart } = useCart();
   const [activePlateId, setActivePlateId] = useState('grille');
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
   const [activeAddonIndex, setActiveAddonIndex] = useState(0);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [showStickyAddedMessage, setShowStickyAddedMessage] = useState(false);
+
+  // Sync scroll height to determine sticky add-to-cart visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollThreshold = 950;
+      const footer = document.querySelector('footer');
+      const footerRect = footer?.getBoundingClientRect();
+      const isPastThreshold = window.scrollY > scrollThreshold;
+      const isNotAtFooter = footerRect ? footerRect.top > window.innerHeight : true;
+      setShowStickyBar(isPastThreshold && isNotAtFooter);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Parse query parameters on load to pre-populate configuration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const plateParam = params.get('plate');
+      if (plateParam && ['grille', 'anvil', 'lattice'].includes(plateParam)) {
+        setActivePlateId(plateParam);
+      }
+      const addonsParam = params.get('addons');
+      if (addonsParam) {
+        const addonIds = addonsParam.split(',');
+        setSelectedAddonIds(addonIds.filter(id => ['butter_roller', 'crimper_zone', 'steam_vent'].includes(id)));
+      }
+      
+      if (window.location.search) {
+        setTimeout(() => {
+          const configSec = document.getElementById('configure');
+          configSec?.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+      }
+    }
+  }, []);
 
   const addonsData = [
     {
+      id: "butter_roller",
       title: "Butter/Oil Roller Reservoir",
       image: "/images/addon-butter-roller.jpg",
       tagline: "Automated crust coating.",
       desc: "A rotary oil spreader that fits directly onto the press base. Rolling bread across the oil reservoir provides a perfectly thin, even coating for maximum golden crispiness without sogginess.",
     },
     {
+      id: "crimper_zone",
       title: "Edge-Sealing Crimper Zone",
       image: "/images/addon-crimper.jpg",
       tagline: "Lock in melted fillings.",
       desc: "Modular metal crimper inserts that slide onto plate borders to seal sandwich edges. Ideal for sealing cheese, jams, and fillings inside pressed hand pies, pocket sandwiches, and calzones.",
     },
     {
+      id: "steam_vent",
       title: "Steam Vent w/ Herb Reservoir",
       image: "/images/addon-steam-vent.jpg",
       tagline: "Tender interior, crisp exterior.",
@@ -38,6 +83,35 @@ export default function Home() {
 
   const handlePrevAddon = () => {
     setActiveAddonIndex((prev) => (prev - 1 + addonsData.length) % addonsData.length);
+  };
+
+  const basePrice = 349.00;
+  const platePrice = activePlateId === 'lattice' ? 25.00 : 0.00;
+  const addonsPrice = selectedAddonIds.reduce((sum, id) => {
+    if (id === 'butter_roller') return sum + 39.00;
+    if (id === 'crimper_zone') return sum + 29.00;
+    if (id === 'steam_vent') return sum + 49.00;
+    return sum;
+  }, 0);
+  const totalPrice = basePrice + platePrice + addonsPrice;
+  const activePlateName = activePlateId === 'lattice' ? 'The Lattice' : activePlateId === 'anvil' ? 'The Anvil' : 'The Grille';
+
+  const handleStickyAddToCart = () => {
+    const plateOpt = {
+      id: activePlateId,
+      name: activePlateName,
+      priceDelta: platePrice
+    };
+    const addonsOpt = selectedAddonIds.map(id => {
+      const name = id === 'butter_roller' ? 'Butter/Oil Roller Reservoir' : id === 'crimper_zone' ? 'Edge-Sealing Crimper Zone' : 'Steam Vent w/ Water Reservoir';
+      const priceDelta = id === 'butter_roller' ? 39.00 : id === 'crimper_zone' ? 29.00 : 49.00;
+      return { id, name, priceDelta };
+    });
+    addToCart(plateOpt, addonsOpt, 1);
+    setShowStickyAddedMessage(true);
+    setTimeout(() => {
+      setShowStickyAddedMessage(false);
+    }, 2500);
   };
 
   const productJsonLd = {
@@ -132,8 +206,12 @@ export default function Home() {
       </section>
 
       {/* 2. Feature Highlight Strip */}
-      <section className="bg-iron-black text-wrought-cream py-6 border-y-2 border-iron-black overflow-x-auto no-scrollbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex overflow-x-auto no-scrollbar md:grid md:grid-cols-5 gap-6 text-center justify-between md:justify-items-center items-center w-full">
+      <section className="bg-iron-black text-wrought-cream py-6 border-y-2 border-iron-black relative overflow-hidden">
+        {/* Mobile scroll indicator gradients */}
+        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-iron-black to-transparent pointer-events-none md:hidden z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-iron-black to-transparent pointer-events-none md:hidden z-10" />
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-6 md:px-8 flex overflow-x-auto no-scrollbar md:grid md:grid-cols-5 gap-6 text-center justify-between md:justify-items-center items-center w-full">
           <a href="#deep-dive" className="flex-shrink-0 min-w-[140px] md:min-w-0 group flex flex-col items-center gap-1">
             <span className="font-mono text-xs font-bold text-wrought-copper group-hover:text-wrought-cream transition-colors flex items-center gap-1">
               Dual-Zone Heat <ArrowRight size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -319,6 +397,22 @@ export default function Home() {
                     {addonsData[activeAddonIndex].desc}
                   </motion.p>
                 </AnimatePresence>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const addonId = addonsData[activeAddonIndex].id;
+                    setSelectedAddonIds((prev) => {
+                      if (prev.includes(addonId)) return prev;
+                      return [...prev, addonId];
+                    });
+                    setTimeout(() => {
+                      document.getElementById('configure')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="mt-4 self-start py-1.5 px-4 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase text-[9px] tracking-widest font-bold rounded transition-all cursor-pointer"
+                >
+                  {selectedAddonIds.includes(addonsData[activeAddonIndex].id) ? 'Equipped ✓' : 'Equip Attachment +'}
+                </button>
               </div>
 
               {/* Slider Navigation */}
@@ -351,7 +445,13 @@ export default function Home() {
       {/* 5. Configurator & Purchase */}
       <section id="configure" className="py-16 px-4 bg-[#eae1d4] border-y border-iron-black/15">
         <div className="max-w-4xl mx-auto w-full">
-          <ProductConfigurator onPlateChange={setActivePlateId} />
+          <ProductConfigurator
+            onPlateChange={setActivePlateId}
+            selectedPlateId={activePlateId}
+            setSelectedPlateId={setActivePlateId}
+            selectedAddonIds={selectedAddonIds}
+            setSelectedAddonIds={setSelectedAddonIds}
+          />
         </div>
       </section>
 
@@ -418,59 +518,67 @@ export default function Home() {
 
       {/* 6. Cleaning Features */}
       <section id="cleaning-features" className="py-20 px-4 bg-[#eae1d4] border-t border-iron-black/15">
-        <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            <span className="font-mono text-xs text-wrought-copper font-bold uppercase tracking-widest">Maintenance</span>
-            <h2 className="text-3xl font-serif font-bold text-iron-black mt-2 mb-6">Built to be Opened, Cleaned, & Serviced</h2>
-            <div className="flex flex-col gap-4 text-xs sm:text-sm text-charcoal/80">
-              <p>
-                <strong>Quick-Release Levers:</strong> Stripped of complex plastics, solid brass releases unlock the top and bottom cast plates instantly. Plates slide out cold or hot for direct sink cleaning.
-              </p>
-              <p>
-                <strong>Dishwasher-Safe Drip Tray:</strong> A heavy copper reservoir sits beneath the base, catching fat runoff. Slide it out forward and slide it into the dishwasher.
-              </p>
-              <p>
-                <strong>The Flat Paddle Combo Tool:</strong> Every Wrought includes a flat paddle cleaning tool made of firm nylon and silicone that won't scratch seasoning. It features a spatula/lifter edge on one side and a wide comb-scraper edge matched to plate ridges on the other. It clips into the storage stand when not in use.
-              </p>
+        <div className="max-w-5xl mx-auto w-full flex flex-col gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="font-mono text-xs text-wrought-copper font-bold uppercase tracking-widest">Maintenance</span>
+              <h2 className="text-3xl font-serif font-bold text-iron-black mt-2 mb-6">Built to be Opened, Cleaned, & Serviced</h2>
+              <div className="flex flex-col gap-4 text-xs sm:text-sm text-charcoal/80">
+                <p>
+                  <strong>Quick-Release Levers:</strong> Stripped of complex plastics, solid brass releases unlock the top and bottom cast plates instantly. Plates slide out cold or hot for direct sink cleaning.
+                </p>
+                <p>
+                  <strong>Dishwasher-Safe Drip Tray:</strong> A heavy copper reservoir sits beneath the base, catching fat runoff. Slide it out forward and slide it into the dishwasher.
+                </p>
+                <p>
+                  <strong>The Flat Paddle Combo Tool:</strong> Every Wrought includes a flat paddle cleaning tool made of firm nylon and silicone that won't scratch seasoning. It features a spatula/lifter edge on one side and a wide comb-scraper edge matched to plate ridges on the other. It clips into the storage stand when not in use.
+                </p>
+              </div>
             </div>
-            
-            {/* Quote Callout */}
-            <div className="mt-8 border-l-4 border-wrought-copper pl-6 py-2 italic font-serif text-lg text-iron-black/90">
-              "One pass, under a minute, while it's still warm."
-              <span className="block font-mono text-[10px] uppercase tracking-widest text-wrought-copper font-bold not-italic mt-2">
-                — Optimal Cast Iron Cleaning Protocol
-              </span>
+            <div className="flex flex-col justify-center items-center p-8 bg-wrought-cream border-2 border-iron-black rounded-lg relative overflow-hidden shadow-inner">
+              {/* Draw a schematic clean tool diagram */}
+              <svg viewBox="0 0 200 150" className="w-full max-w-[280px] stroke-iron-black fill-none stroke-[2]">
+                {/* Ridges of the plate */}
+                <path d="M 20,120 L 180,120" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="40" y1="120" x2="40" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="60" y1="120" x2="60" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="80" y1="120" x2="80" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="100" y1="120" x2="100" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="120" y1="120" x2="120" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="140" y1="120" x2="140" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                <line x1="160" y1="120" x2="160" y2="135" stroke="#1C1A18" strokeWidth="4" />
+                
+                {/* Flat paddle tool scraping */}
+                <g transform="translate(30, 45) rotate(15)">
+                  {/* Handle */}
+                  <rect x="10" y="10" width="80" height="24" rx="2" fill="#2E2A26" stroke="#1C1A18" strokeWidth="2" />
+                  <circle cx="20" cy="22" r="3" fill="#B87333" />
+                  {/* Spatula flat edge / comb scraper edge */}
+                  <path d="M 90,10 L 110,5 L 110,39 L 90,34 Z" fill="#6E8871" stroke="#1C1A18" strokeWidth="2" />
+                  {/* Comb teeth scraping */}
+                  <path d="M 110,5 L 115,8 L 110,11 L 115,14 L 110,17 L 115,20 L 110,23 L 115,26 L 110,29 L 115,32 L 110,35 L 115,38 L 110,39" stroke="#1C1A18" strokeWidth="2" fill="none" />
+                </g>
+                {/* Steam waves */}
+                <path d="M 110,110 Q 115,95 110,80" stroke="rgba(110,136,113,0.5)" strokeWidth="3" className="animate-pulse" />
+                <path d="M 130,110 Q 135,95 130,80" stroke="rgba(110,136,113,0.5)" strokeWidth="3" className="animate-pulse" />
+                
+                <text x="100" y="25" textAnchor="middle" fill="#1C1A18" fontFamily="var(--font-mono)" fontSize="9" letterSpacing="1">COMB-SCRAPER IN ACTION</text>
+              </svg>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center p-8 bg-wrought-cream border-2 border-iron-black rounded-lg relative overflow-hidden shadow-inner">
-            {/* Draw a schematic clean tool diagram */}
-            <svg viewBox="0 0 200 150" className="w-full max-w-[280px] stroke-iron-black fill-none stroke-[2]">
-              {/* Ridges of the plate */}
-              <path d="M 20,120 L 180,120" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="40" y1="120" x2="40" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="60" y1="120" x2="60" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="80" y1="120" x2="80" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="100" y1="120" x2="100" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="120" y1="120" x2="120" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="140" y1="120" x2="140" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              <line x1="160" y1="120" x2="160" y2="135" stroke="#1C1A18" strokeWidth="4" />
-              
-              {/* Flat paddle tool scraping */}
-              <g transform="translate(30, 45) rotate(15)">
-                {/* Handle */}
-                <rect x="10" y="10" width="80" height="24" rx="2" fill="#2E2A26" stroke="#1C1A18" strokeWidth="2" />
-                <circle cx="20" cy="22" r="3" fill="#B87333" />
-                {/* Spatula flat edge / comb scraper edge */}
-                <path d="M 90,10 L 110,5 L 110,39 L 90,34 Z" fill="#6E8871" stroke="#1C1A18" strokeWidth="2" />
-                {/* Comb teeth scraping */}
-                <path d="M 110,5 L 115,8 L 110,11 L 115,14 L 110,17 L 115,20 L 110,23 L 115,26 L 110,29 L 115,32 L 110,35 L 115,38 L 110,39" stroke="#1C1A18" strokeWidth="2" fill="none" />
-              </g>
-              {/* Steam waves */}
-              <path d="M 110,110 Q 115,95 110,80" stroke="rgba(110,136,113,0.5)" strokeWidth="3" className="animate-pulse" />
-              <path d="M 130,110 Q 135,95 130,80" stroke="rgba(110,136,113,0.5)" strokeWidth="3" className="animate-pulse" />
-              
-              <text x="100" y="25" textAnchor="middle" fill="#1C1A18" fontFamily="var(--font-mono)" fontSize="9" letterSpacing="1">COMB-SCRAPER IN ACTION</text>
-            </svg>
+
+          {/* Quote Callout Redesigned as Card */}
+          <div className="bg-wrought-cream border-2 border-iron-black rounded-lg p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8 shadow-sm">
+            <div className="w-14 h-14 rounded-full bg-[#eae1d4] border border-iron-black/20 flex items-center justify-center text-wrought-copper flex-shrink-0">
+              <Sparkles size={28} className="stroke-[1.5]" />
+            </div>
+            <div className="flex-1">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-wrought-copper font-bold block mb-1">Optimal Cleaning Protocol</span>
+              <h3 className="font-serif text-lg font-bold text-iron-black mb-2">"One pass, under a minute, while it's still warm."</h3>
+              <p className="text-charcoal/80 text-xs sm:text-sm leading-relaxed">
+                Cast iron cleans easiest before fat runoff and food residue have a chance to cool and harden. Running the custom comb-scraper edge down the ridges immediately after cooking allows steam to lift oil and carbonized sugar in seconds, preserving your natural polymerized seasoning layer.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -549,6 +657,43 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Sticky Mobile Add-to-Cart Bar */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-iron-black text-wrought-cream border-t border-iron-black py-3.5 px-4 shadow-2xl flex md:hidden items-center justify-between gap-4"
+          >
+            <div className="flex flex-col text-left min-w-0">
+              <span className="font-mono text-[8px] text-wrought-cream/50 uppercase tracking-widest block mb-0.5">Wrought Configuration</span>
+              <span className="font-serif text-xs font-bold truncate text-wrought-cream">
+                {activePlateName} {selectedAddonIds.length > 0 && `+ ${selectedAddonIds.length} Add-ons`}
+              </span>
+              <span className="font-mono text-xs font-bold text-wrought-copper mt-0.5 tabular-nums">
+                ${totalPrice.toFixed(2)}
+              </span>
+            </div>
+            
+            <div className="flex flex-col items-end relative">
+              <button
+                type="button"
+                onClick={handleStickyAddToCart}
+                className="py-2 px-4 bg-wrought-cream hover:bg-wrought-copper text-iron-black hover:text-wrought-cream font-mono uppercase text-[9px] tracking-widest font-black rounded flex items-center gap-1 transition-all whitespace-nowrap active:scale-95 cursor-pointer"
+              >
+                <ShoppingBag size={10} /> Add to Cart
+              </button>
+              {showStickyAddedMessage && (
+                <span className="absolute -top-7 right-0 bg-patina-green text-wrought-cream text-[8px] font-mono py-0.5 px-2 rounded shadow-md uppercase tracking-wider font-bold">
+                  Added ✓
+                </span>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

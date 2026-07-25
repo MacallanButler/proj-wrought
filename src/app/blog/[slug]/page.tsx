@@ -2,6 +2,7 @@
 
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Thermometer, Calendar, ShieldCheck, HelpCircle, Star } from 'lucide-react';
 
 const LOCAL_RECIPES = [
@@ -100,6 +101,14 @@ export default function RecipeDetailPage({ params }: PageProps) {
   const recipe = LOCAL_RECIPES.find((r) => r.slug === resolvedParams.slug);
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [checkedIngredients, setCheckedIngredients] = useState<number[]>([]);
+
+  const getPlateIdForRecipe = (plateName: string) => {
+    const lower = plateName.toLowerCase();
+    if (lower.includes('lattice')) return 'lattice';
+    if (lower.includes('anvil')) return 'anvil';
+    return 'grille';
+  };
 
   useEffect(() => {
     if (recipe && typeof window !== 'undefined') {
@@ -184,10 +193,13 @@ export default function RecipeDetailPage({ params }: PageProps) {
           {/* Recipe Image Banner */}
           {recipe.image && (
             <div className="w-full aspect-[16/10] border-2 border-iron-black rounded-lg overflow-hidden relative bg-[#eae1d4]">
-              <img 
+              <Image 
                 src={recipe.image} 
                 alt={recipe.title} 
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 800px"
+                priority
               />
             </div>
           )}
@@ -222,10 +234,31 @@ export default function RecipeDetailPage({ params }: PageProps) {
           {/* Ingredients list */}
           <div className="bg-[#eae1d4]/40 border border-iron-black/10 rounded-lg p-5">
             <h3 className="font-serif font-bold text-sm text-iron-black mb-3 border-b border-iron-black/10 pb-2">Ingredients Needed</h3>
-            <ul className="list-disc pl-5 flex flex-col gap-1.5 text-xs text-charcoal/80">
-              {recipe.ingredients.map((ing, idx) => (
-                <li key={idx}>{ing}</li>
-              ))}
+            <ul className="flex flex-col gap-2.5 text-xs text-charcoal/80">
+              {recipe.ingredients.map((ing, idx) => {
+                const isChecked = checkedIngredients.includes(idx);
+                return (
+                  <li 
+                    key={idx} 
+                    className="flex items-center gap-2.5 cursor-pointer select-none group"
+                    onClick={() => {
+                      setCheckedIngredients((prev) =>
+                        prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+                      );
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {}}
+                      className="w-3.5 h-3.5 border-iron-black/20 text-wrought-copper rounded focus:ring-wrought-copper focus:ring-1 accent-wrought-copper cursor-pointer"
+                    />
+                    <span className={`transition-all duration-150 ${isChecked ? 'line-through text-charcoal/40' : 'group-hover:text-wrought-copper'}`}>
+                      {ing}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -279,6 +312,13 @@ export default function RecipeDetailPage({ params }: PageProps) {
                 Install recommended plate style before preheating. Insert the temperature probe into the sandwich core to automatically trigger acoustic rest mode when target melt temperatures are reached.
               </div>
             </div>
+
+            <Link
+              href={`/?plate=${getPlateIdForRecipe(recipe.plate)}`}
+              className="w-full py-2.5 bg-iron-black hover:bg-wrought-copper text-wrought-cream hover:text-wrought-cream text-center font-mono text-[10px] uppercase tracking-widest font-black rounded transition-all mt-2 cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow"
+            >
+              Configure For Recipe
+            </Link>
           </div>
         </div>
 

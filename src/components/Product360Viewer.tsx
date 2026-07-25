@@ -11,6 +11,15 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
   const [viewIndex, setViewIndex] = useState(0); // 0: Closed, 1: Open, 2: Exploded
   const [isPreloading, setIsPreloading] = useState(false);
 
+  const handleDragEnd = (event: any, info: any) => {
+    const swipeThreshold = 50;
+    if (info.offset.x < -swipeThreshold) {
+      setViewIndex((prev) => (prev + 1) % views.length);
+    } else if (info.offset.x > swipeThreshold) {
+      setViewIndex((prev) => (prev - 1 + views.length) % views.length);
+    }
+  };
+
   const views = [
     { name: 'Forged Exterior', label: 'Closed View' },
     { name: 'Dual Heating Zones', label: 'Open View' },
@@ -51,8 +60,14 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
         <line x1="100" y1="210" x2="400" y2="210" stroke="#F5EFE6" strokeWidth="1" opacity="0.1" />
 
         {/* Brand Plaque (Copper) */}
-        <rect x="200" y="215" width="100" height="20" fill="#B87333" stroke="#1C1A18" strokeWidth="1.5" />
-        <text x="250" y="229" textAnchor="middle" fill="#F5EFE6" fontFamily="var(--font-serif)" fontSize="11" fontWeight="bold" letterSpacing="2">WROUGHT</text>
+        <rect x="200" y="212" width="100" height="18" fill="#B87333" stroke="#1C1A18" strokeWidth="1.5" />
+        <text x="250" y="225" textAnchor="middle" fill="#F5EFE6" fontFamily="var(--font-serif)" fontSize="10" fontWeight="bold" letterSpacing="2">WROUGHT</text>
+
+        {/* Plate Config Tag (stamped look) */}
+        <rect x="185" y="235" width="130" height="10" rx="1" fill="#A9782F" stroke="#1C1A18" strokeWidth="1" />
+        <text x="250" y="242" textAnchor="middle" fill="#F5EFE6" fontFamily="var(--font-mono)" fontSize="6" fontWeight="bold" className="tabular-nums" letterSpacing="0.5">
+          PLATES: {activePlateId === 'grille' ? 'THE GRILLE' : activePlateId === 'lattice' ? 'THE LATTICE' : 'THE ANVIL'}
+        </text>
 
         {/* Indicator Lights (Patina green for ready state, copper for heating) */}
         <circle cx="130" cy="225" r="5" fill="#B87333" stroke="#1C1A18" strokeWidth="1" />
@@ -228,7 +243,11 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="w-full flex justify-center"
+              className="w-full flex justify-center cursor-grab active:cursor-grabbing touch-pan-y"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.5}
+              onDragEnd={handleDragEnd}
             >
               {viewIndex === 0 && renderClosedView()}
               {viewIndex === 1 && renderOpenView()}
@@ -261,9 +280,12 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
         ))}
       </div>
 
-      <div className="w-full text-center mt-2 lg:mt-3">
-        <span className="font-mono text-[9px] text-iron-black/40 uppercase tracking-widest">
+      <div className="w-full text-center mt-2 lg:mt-3 flex flex-col gap-0.5">
+        <span className="font-mono text-[9px] text-iron-black/50 uppercase tracking-widest">
           Active Plate: {activePlateId === 'grille' ? 'The Grille' : activePlateId === 'lattice' ? 'The Lattice' : 'The Anvil'}
+        </span>
+        <span className="font-mono text-[8px] text-iron-black/35 uppercase tracking-wider block">
+          ← Swipe or drag to rotate schema →
         </span>
       </div>
     </div>

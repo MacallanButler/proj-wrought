@@ -4,9 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 export default function RepairPage() {
+  const { addPartToCart } = useCart();
   const [hoveredComponent, setHoveredComponent] = useState<string | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+  const activeComponent = hoveredComponent || selectedComponent;
 
   const parts = [
     { id: 'handle', name: 'Forged Steel Handle', price: '$22.00', desc: 'Pre-assembled with copper grips. Attaches via two standard M5 screws.' },
@@ -42,9 +46,10 @@ export default function RepairPage() {
               className="cursor-pointer transition-all duration-300"
               onMouseEnter={() => setHoveredComponent('handle')}
               onMouseLeave={() => setHoveredComponent(null)}
-              opacity={hoveredComponent === 'handle' || !hoveredComponent ? 1 : 0.35}
+              onClick={() => setSelectedComponent(prev => prev === 'handle' ? null : 'handle')}
+              opacity={activeComponent === 'handle' || !activeComponent ? 1 : 0.35}
             >
-              <rect x="130" y="30" width="140" height="8" rx="4" fill={hoveredComponent === 'handle' ? '#B87333' : '#1C1A18'} />
+              <rect x="130" y="30" width="140" height="8" rx="4" fill={activeComponent === 'handle' ? '#B87333' : '#1C1A18'} />
               <path d="M 120,60 L 140,30 M 280,60 L 260,30" strokeWidth="4" />
               <text x="200" y="20" textAnchor="middle" fill="#1C1A18" fontFamily="var(--font-mono)" fontSize="9" fontWeight="bold">HANDLE ASSEMBLY</text>
             </g>
@@ -56,10 +61,11 @@ export default function RepairPage() {
               className="cursor-pointer transition-all duration-300"
               onMouseEnter={() => setHoveredComponent('heating')}
               onMouseLeave={() => setHoveredComponent(null)}
-              opacity={hoveredComponent === 'heating' || !hoveredComponent ? 1 : 0.35}
+              onClick={() => setSelectedComponent(prev => prev === 'heating' ? null : 'heating')}
+              opacity={activeComponent === 'heating' || !activeComponent ? 1 : 0.35}
             >
-              <rect x="110" y="110" width="180" height="24" rx="2" fill={hoveredComponent === 'heating' ? 'rgba(184,115,51,0.2)' : 'rgba(28,26,24,0.05)'} />
-              <path d="M 130,122 L 270,122 M 140,116 L 260,116 M 140,128 L 260,128" stroke={hoveredComponent === 'heating' ? '#B87333' : '#2E2A26'} />
+              <rect x="110" y="110" width="180" height="24" rx="2" fill={activeComponent === 'heating' ? 'rgba(184,115,51,0.2)' : 'rgba(28,26,24,0.05)'} />
+              <path d="M 130,122 L 270,122 M 140,116 L 260,116 M 140,128 L 260,128" stroke={activeComponent === 'heating' ? '#B87333' : '#2E2A26'} />
               <text x="200" y="102" textAnchor="middle" fill="#1C1A18" fontFamily="var(--font-mono)" fontSize="9" fontWeight="bold">HEATING CORE</text>
             </g>
 
@@ -70,9 +76,10 @@ export default function RepairPage() {
               className="cursor-pointer transition-all duration-300"
               onMouseEnter={() => setHoveredComponent('hinge')}
               onMouseLeave={() => setHoveredComponent(null)}
-              opacity={hoveredComponent === 'hinge' || !hoveredComponent ? 1 : 0.35}
+              onClick={() => setSelectedComponent(prev => prev === 'hinge' ? null : 'hinge')}
+              opacity={activeComponent === 'hinge' || !activeComponent ? 1 : 0.35}
             >
-              <path d="M 80,150 L 50,210 L 70,250" stroke={hoveredComponent === 'hinge' ? '#B87333' : '#1C1A18'} strokeWidth="6" strokeLinecap="round" />
+              <path d="M 80,150 L 50,210 L 70,250" stroke={activeComponent === 'hinge' ? '#B87333' : '#1C1A18'} strokeWidth="6" strokeLinecap="round" />
               <circle cx="80" cy="150" r="4" fill="#1C1A18" />
               <circle cx="50" cy="210" r="4" fill="#1C1A18" />
               <circle cx="70" cy="250" r="4" fill="#1C1A18" />
@@ -86,9 +93,10 @@ export default function RepairPage() {
               className="cursor-pointer transition-all duration-300"
               onMouseEnter={() => setHoveredComponent('feet')}
               onMouseLeave={() => setHoveredComponent(null)}
-              opacity={hoveredComponent === 'feet' || !hoveredComponent ? 1 : 0.35}
+              onClick={() => setSelectedComponent(prev => prev === 'feet' ? null : 'feet')}
+              opacity={activeComponent === 'feet' || !activeComponent ? 1 : 0.35}
             >
-              <path d="M 90,270 L 310,270 L 290,320 L 110,320 Z" fill={hoveredComponent === 'feet' ? 'rgba(184,115,51,0.1)' : '#1C1A18'} />
+              <path d="M 90,270 L 310,270 L 290,320 L 110,320 Z" fill={activeComponent === 'feet' ? 'rgba(184,115,51,0.1)' : '#1C1A18'} />
               <rect x="120" y="320" width="20" height="10" fill="#2E2A26" />
               <rect x="260" y="320" width="20" height="10" fill="#2E2A26" />
               <text x="200" y="345" textAnchor="middle" fill="#1C1A18" fontFamily="var(--font-mono)" fontSize="9" fontWeight="bold">HEAVY CAST BASE</text>
@@ -106,23 +114,40 @@ export default function RepairPage() {
 
           <div className="flex flex-col gap-3">
             {parts.map((p) => {
-              const isHighlighted = hoveredComponent === p.id;
+              const isHighlighted = activeComponent === p.id;
+              const numericPrice = parseFloat(p.price.replace('$', ''));
               return (
                 <div
                   key={p.id}
                   onMouseEnter={() => setHoveredComponent(p.id)}
                   onMouseLeave={() => setHoveredComponent(null)}
-                  className={`p-4 border-2 rounded transition-all ${
+                  onClick={() => setSelectedComponent(prev => prev === p.id ? null : p.id)}
+                  className={`p-4 border-2 rounded transition-all cursor-pointer flex flex-col justify-between ${
                     isHighlighted 
                       ? 'border-wrought-copper bg-[#eae1d4] shadow-sm' 
                       : 'border-iron-black/10 bg-[#eae1d4]/20'
                   }`}
                 >
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-serif font-bold text-sm text-iron-black">{p.name}</span>
-                    <span className="font-mono text-xs font-bold text-wrought-copper">{p.price}</span>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-serif font-bold text-sm text-iron-black">{p.name}</span>
+                      <span className="font-mono text-xs font-bold text-wrought-copper tabular-nums">{p.price}</span>
+                    </div>
+                    <p className="text-xs text-charcoal/70">{p.desc}</p>
                   </div>
-                  <p className="text-xs text-charcoal/70">{p.desc}</p>
+                  {isHighlighted && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addPartToCart(p.id, `${p.name} (Replacement)`, numericPrice, 1);
+                        alert(`Added ${p.name} replacement core to your cart.`);
+                      }}
+                      className="mt-3 py-1.5 px-4 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase text-[9px] tracking-widest font-black rounded transition-colors self-start cursor-pointer active:scale-95"
+                    >
+                      Order Replacement Core +
+                    </button>
+                  )}
                 </div>
               );
             })}

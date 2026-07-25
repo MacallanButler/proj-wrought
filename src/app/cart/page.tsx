@@ -45,8 +45,8 @@ export default function CartPage() {
               {cartItems.map((item) => {
                 const itemUnitPrice = 
                   item.basePrice + 
-                  item.plateOption.priceDelta + 
-                  item.addons.reduce((sum, a) => sum + a.priceDelta, 0);
+                  (item.plateOption?.priceDelta || 0) + 
+                  (item.addons?.reduce((sum, a) => sum + a.priceDelta, 0) || 0);
                 const lineTotal = itemUnitPrice * item.quantity;
 
                 return (
@@ -66,24 +66,33 @@ export default function CartPage() {
                       
                       {/* Configuration Details */}
                       <div className="mt-2 flex flex-col gap-1 font-sans text-xs text-charcoal/80">
-                        <div>
-                          <span className="font-mono text-[9px] uppercase tracking-wider text-iron-black/50">Casting Plate: </span>
-                          <span className="font-semibold text-iron-black">{item.plateOption.name}</span>
-                          {item.plateOption.priceDelta > 0 && (
-                            <span className="font-mono text-wrought-copper ml-1.5">(+${item.plateOption.priceDelta.toFixed(2)})</span>
-                          )}
-                        </div>
+                        {item.plateOption && (
+                          <div>
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-iron-black/50">Casting Plate: </span>
+                            <span className="font-semibold text-iron-black">{item.plateOption.name}</span>
+                            {item.plateOption.priceDelta > 0 && (
+                              <span className="font-mono text-wrought-copper ml-1.5 tabular-nums">(+${item.plateOption.priceDelta.toFixed(2)})</span>
+                            )}
+                          </div>
+                        )}
 
-                        {item.addons.length > 0 && (
+                        {item.addons && item.addons.length > 0 && (
                           <div>
                             <span className="font-mono text-[9px] uppercase tracking-wider text-iron-black/50">Attachments: </span>
                             <ul className="list-disc pl-4 mt-0.5 flex flex-col gap-0.5 text-charcoal/70">
                               {item.addons.map((a) => (
                                 <li key={a.id}>
-                                  {a.name} <span className="font-mono text-wrought-copper font-bold ml-1">(+${a.priceDelta.toFixed(2)})</span>
+                                  {a.name} <span className="font-mono text-wrought-copper font-bold ml-1 tabular-nums">(+${a.priceDelta.toFixed(2)})</span>
                                 </li>
                               ))}
                             </ul>
+                          </div>
+                        )}
+
+                        {item.isPart && (
+                          <div>
+                            <span className="font-mono text-[9px] uppercase tracking-wider text-iron-black/50">Component Type: </span>
+                            <span className="font-semibold text-iron-black">Replacement Core</span>
                           </div>
                         )}
                       </div>
