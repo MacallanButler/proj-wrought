@@ -97,28 +97,28 @@ export default function Home() {
       />
       
       {/* 1. Hero Section */}
-      <section id="product" className="pt-6 pb-10 md:pt-8 md:pb-12 lg:pt-10 lg:pb-16 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section id="product" className="pt-4 pb-4 md:py-6 lg:py-8 lg:h-[calc(100vh-140px)] lg:max-h-[640px] lg:min-h-[480px] px-4 sm:px-6 md:px-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center overflow-hidden">
         {/* Left Col: Brand Copy */}
         <div className="lg:col-span-5 flex flex-col items-start text-left">
-          <span className="font-mono text-xs uppercase tracking-widest text-wrought-copper font-bold mb-3 flex items-center gap-1.5">
+          <span className="font-mono text-xs uppercase tracking-widest text-wrought-copper font-bold mb-2.5 flex items-center gap-1.5">
             <Sparkles size={12} /> Forged to endure, built to restore
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-black text-iron-black leading-[1.05] tracking-tight mb-6">
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-[40px] xl:text-5xl font-black text-iron-black leading-[1.1] tracking-tight mb-4">
             The Last Press You'll Ever Buy.
           </h1>
-          <p className="text-charcoal/80 text-sm sm:text-base leading-relaxed mb-8 max-w-lg">
+          <p className="text-charcoal/80 text-xs sm:text-sm leading-relaxed mb-6 max-w-lg">
             Wrought reimagines the panini press as a heavy kitchen instrument. Combining dual-zone casting plates with modular, user-replaceable heating cores, it is engineered for life and crafted from solid ironwork mechanics.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <a
               href="#configure"
-              className="py-3 px-8 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase text-xs tracking-widest font-bold rounded shadow-md hover:shadow-lg transition-all text-center"
+              className="py-2.5 px-6 bg-iron-black hover:bg-wrought-copper text-wrought-cream font-mono uppercase text-xs tracking-widest font-bold rounded shadow-md hover:shadow-lg transition-all text-center"
             >
               Configure Yours
             </a>
             <Link
               href="/repair-sustainability"
-              className="py-3 px-8 border-2 border-iron-black hover:bg-iron-black hover:text-wrought-cream text-iron-black font-mono uppercase text-xs tracking-widest font-bold rounded transition-all text-center"
+              className="py-2.5 px-6 border-2 border-iron-black hover:bg-iron-black hover:text-wrought-cream text-iron-black font-mono uppercase text-xs tracking-widest font-bold rounded transition-all text-center"
             >
               Repair Principles
             </Link>

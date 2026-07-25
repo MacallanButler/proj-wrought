@@ -20,7 +20,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
   // SVG Renderings for each state
   const renderClosedView = () => {
     return (
-      <svg viewBox="0 0 500 400" className="w-full h-full max-h-[380px] drop-shadow-2xl">
+      <svg viewBox="0 0 500 400" className="w-full h-full max-h-[260px] lg:max-h-[300px] drop-shadow-2xl">
         {/* Shadow */}
         <ellipse cx="250" cy="350" rx="180" ry="15" fill="rgba(28,26,24,0.15)" />
         
@@ -74,7 +74,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
 
   const renderOpenView = () => {
     return (
-      <svg viewBox="0 0 500 400" className="w-full h-full max-h-[380px] drop-shadow-2xl">
+      <svg viewBox="0 0 500 400" className="w-full h-full max-h-[260px] lg:max-h-[300px] drop-shadow-2xl">
         {/* Shadow */}
         <ellipse cx="250" cy="360" rx="190" ry="12" fill="rgba(28,26,24,0.15)" />
         
@@ -114,7 +114,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
 
   const renderExplodedView = () => {
     return (
-      <svg viewBox="0 0 500 440" className="w-full h-full max-h-[380px] drop-shadow-2xl">
+      <svg viewBox="0 0 500 440" className="w-full h-full max-h-[260px] lg:max-h-[300px] drop-shadow-2xl">
         {/* Layer 1: Top Handle & Cast Cover (Y: 50) */}
         <g transform="translate(0, 0)">
           <path d="M 150,80 L 350,80 L 330,110 L 170,110 Z" fill="#1C1A18" stroke="#1C1A18" strokeWidth="2" />
@@ -201,20 +201,20 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
   };
 
   return (
-    <div className="w-full flex flex-col items-center bg-[#eae1d4] border-2 border-iron-black rounded-lg p-6 relative overflow-hidden">
+    <div className="w-full flex flex-col items-center bg-[#eae1d4] border-2 border-iron-black rounded-lg p-4 lg:p-5 relative overflow-hidden">
       {/* Scrollwork Border Pattern Top & Bottom */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-iron-black opacity-80" />
       <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-iron-black opacity-80" />
       
       {/* Headline banner */}
-      <div className="w-full flex justify-between items-center mb-6 border-b border-iron-black/25 pb-3">
+      <div className="w-full flex justify-between items-center mb-4 lg:mb-5 border-b border-iron-black/25 pb-2 lg:pb-3">
         <span className="font-mono text-[10px] tracking-widest text-iron-black/60 uppercase">Interactive Schema</span>
         <h3 className="font-serif text-lg font-bold text-iron-black">{views[viewIndex].name}</h3>
         <span className="font-mono text-xs text-wrought-copper font-bold">{views[viewIndex].label}</span>
       </div>
 
       {/* Viewer Box */}
-      <div className="w-full flex items-center justify-center min-h-[380px]">
+      <div className="w-full flex items-center justify-center min-h-[260px] lg:min-h-[300px]">
         {isPreloading ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-iron-black/50">
             <div className="w-8 h-8 border-2 border-wrought-copper border-t-transparent rounded-full animate-spin mb-2" />
@@ -239,7 +239,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
       </div>
 
       {/* Controller Buttons */}
-      <div className="w-full grid grid-cols-3 gap-2 mt-4">
+      <div className="w-full grid grid-cols-3 gap-2 mt-3 lg:mt-4">
         {views.map((view, i) => (
           <button
             key={i}
@@ -250,7 +250,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
                 setIsPreloading(false);
               }, 200);
             }}
-            className={`py-2.5 px-2 text-[11px] font-mono tracking-wider uppercase border border-iron-black rounded transition-all duration-300 ${
+            className={`py-2 px-2 text-[11px] font-mono tracking-wider uppercase border border-iron-black rounded transition-all duration-300 ${
               viewIndex === i
                 ? 'bg-iron-black text-wrought-cream font-bold shadow-md'
                 : 'bg-wrought-cream text-iron-black hover:bg-iron-black/5'
@@ -261,7 +261,7 @@ export default function Product360Viewer({ activePlateId }: Product360ViewerProp
         ))}
       </div>
 
-      <div className="w-full text-center mt-3">
+      <div className="w-full text-center mt-2 lg:mt-3">
         <span className="font-mono text-[9px] text-iron-black/40 uppercase tracking-widest">
           Active Plate: {activePlateId === 'grille' ? 'The Grille' : activePlateId === 'lattice' ? 'The Lattice' : 'The Anvil'}
         </span>
