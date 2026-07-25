@@ -162,7 +162,7 @@ export default function RecipeDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-12 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
+    <div className="w-full max-w-4xl mx-auto pt-6 pb-12 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
       {/* JSON-LD for Search Engines */}
       <script
         type="application/ld-json"

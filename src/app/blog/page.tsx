@@ -42,7 +42,7 @@ const LOCAL_RECIPES = [
 
 export default function BlogIndexPage() {
   return (
-    <div className="w-full max-w-6xl mx-auto py-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
+    <div className="w-full max-w-6xl mx-auto pt-8 pb-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
       
       {/* Header */}
       <div className="text-center mb-16 border-b border-iron-black/15 pb-8">

@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function AboutPage() {
   return (
-    <div className="w-full max-w-4xl mx-auto py-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
+    <div className="w-full max-w-4xl mx-auto pt-8 pb-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
       
       {/* Page Header */}
       <div className="text-center mb-16 border-b border-iron-black/15 pb-8">

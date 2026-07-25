@@ -162,7 +162,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 md:px-8 bg-wrought-cream">
+    <div className="w-full max-w-7xl mx-auto pt-6 pb-12 px-4 sm:px-6 md:px-8 bg-wrought-cream">
       <Link 
         href="/cart" 
         className="font-mono text-[10px] uppercase tracking-widest text-iron-black/60 hover:text-wrought-copper font-bold flex items-center gap-1.5 mb-8"

@@ -38,6 +38,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${fraunces.variable} ${outfit.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col bg-wrought-cream text-charcoal font-sans selection:bg-wrought-copper selection:text-white">
         <CartProvider>

@@ -52,7 +52,7 @@ export default function OrderSuccessPage() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal min-h-[70vh] flex flex-col justify-center">
+    <div className="w-full max-w-3xl mx-auto pt-8 pb-16 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal min-h-[70vh] flex flex-col justify-center">
       <div className="bg-[#eae1d4]/40 border-2 border-iron-black rounded-lg p-6 md:p-10 relative overflow-hidden flex flex-col items-center shadow-lg text-center">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-patina-green" />
 

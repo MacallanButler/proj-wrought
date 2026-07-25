@@ -14,7 +14,7 @@ export default function CartPage() {
   const orderTotal = cartTotal + estShipping + estTax;
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 md:px-8 bg-wrought-cream min-h-[60vh]">
+    <div className="w-full max-w-7xl mx-auto pt-6 pb-12 px-4 sm:px-6 md:px-8 bg-wrought-cream min-h-[60vh]">
       {/* Back link */}
       <Link 
         href="/" 

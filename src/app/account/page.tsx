@@ -105,7 +105,7 @@ export default function AccountDashboardPage() {
   const activeAddons = order?.items[0]?.addons || [];
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-12 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
+    <div className="w-full max-w-6xl mx-auto pt-6 pb-12 px-4 sm:px-6 md:px-8 bg-wrought-cream text-charcoal">
       
       {/* 1. Header Area */}
       <div className="border-b border-iron-black/15 pb-8 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
